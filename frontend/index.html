@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookstore Management </title>
+    <link rel=""stylesheet" href="style.css">
+</head>
+<body>
+    <h1> Book Manager</h1>
+    <form id="bookForm">
+        <input type="text" id="bookId" placeholder="Enter Id to edit" >
+        <br><br>
+        <input type="text" id="title" placeholder="Title" required/>
+        <input type="text" id="author" placeholder="Author" required/>
+        <input type="text" id="description" placeholder="Description" required/>
+        <input type="text" id="year" placeholder="Year" required/>
+        <button type="button" id="saveBtn" onclick="saveBook()">Save Book</button>
+    </form>
+    <hr />
+    <p id="message" style="color:red;"></p>
+    <br>
+    <input type="number" id="searchId" placeholder="Enter Book ID" />
+    <button  onclick="findBook()">Find Book</button>
+    <br><br><br>
+    <button onclick="showAllBooks()">Show All</button>
+    <button onclick="hideBooks()">Hide All</button>
+    <br><br><br>
+    <table border = "1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Description</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody id="book-results">
+        </tbody>
+    </table>
+
+    <p id="searchResult"></p>
+    <hr />
+    <ul id="bookList"></ul>
+    <script src="script.js"></script>
+</body>
+</html>
