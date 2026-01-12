@@ -29,8 +29,8 @@ def get_book_by_id(id:int, db:Session = Depends(get_db)):
         return book_queryset
     raise HTTPException(status_code=404, detail="Invalid Book ID provided")
 
-@app.put("/books/{id}", response_model=schemas.Book)
-def update_book(book:schemas.BookCreate, id: int, db:Session = Depends(get_db)):
+@app.patch("/books/{id}", response_model=schemas.Book)
+def update_book(book:schemas.BookUpdate, id: int, db:Session = Depends(get_db)):
     db_update = services.update_book(db,book,id)
     if not db_update:
         raise HTTPException(status_code=404, detail="Book not found")

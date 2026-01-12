@@ -1,7 +1,10 @@
 document.addEventListener("DOMContentLoaded", ()=>{
     const API_URL = "http://localhost:8000/books/";
 
+let editingBookId = null; 
+
 async function fetchBooks(){
+    try{
     const response = await fetch(API_URL);
     const books = await response.json();
 
@@ -15,19 +18,20 @@ async function fetchBooks(){
         <td>${book.title}</td>
         <td>${book.author}</td>
         <td>${book.description}</td>
-        <td>${book.year}<td>
+        <td>${book.year}</td>
         <td>
+            <button onclick="editBook(${book.id})">Edit</button>
           <button onclick="deleteBook(${book.id})">Delete</button>
         </td>
         </tr>`;
         
     });
-
+    }catch(error){
+        console.error("FetchBooks error: ",error)
+    }
 }
 
 window.saveBook = async function (){
-    const idField=document.getElementById('bookId');
-    const id= idField.value.trim();
     const title= document.getElementById('title').value;
     const author = document.getElementById('author').value;
     const description= document.getElementById('description').value;
@@ -36,24 +40,33 @@ window.saveBook = async function (){
     const bookData={title,author,description,year};
 
     try{
-        if (id && !isNaN(id)){
-        const checkResponse = await fetch (`${API_URL}${id}`);
-        if (checkResponse.status===404){
-            alert("Error: Book ID " + id + " does not exist. You can only update already available Books.");
-            resetForm();
-        return;
+        if (editingBookId !== null){
+            const updateData={
+                title: title || null,
+                author: author || null,
+                description: description || null,
+                year: isNaN(year) ? null : year
+            };
+            
+            if (Object.keys(updateData).length === 0){
+                alert("Please Change atleast one Field to update");
+                return;
             }
-        const updateResponse=await fetch(`${API_URL}${id}`,{
-            method:'PUT',
+            console.log("Patch Data:", updateData)
+            const response=await fetch(`${API_URL}${editingBookId}`,{
+            method:'PATCH',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify(bookData)
-        });
-        if (!updateResponse.ok){
-            alert("Failed to update book");
-            return;
-        }
-        alert("Book #"+id+"updated successfully")
-        idField.value="";
+            body:JSON.stringify(updateData)
+            });
+            if (!response.ok){
+                const errText = await response.text();
+                console.error("Patch failed:",errText);
+                alert("Failed to update Book");
+                return;
+            }
+            alert("Book Updated successfully");
+            
+
         }else{
         const response = await fetch(`${API_URL}`,{
             method:'POST',
@@ -62,31 +75,52 @@ window.saveBook = async function (){
         });
         if (response.ok){
             alert("New Book added successfully!")
-            idField.value="";
         }
         else{
-            alert("Failed to add Book, Enter all the fields and use correct datatype");
+            alert("Failed to add Book");
             return;
         }
     }
     
-    fetchBooks();
-    resetForm();
     }catch(error){
     console.error("Save Error:",error);
     alert("Server Error: Connection lost")
     }
+    editingBookId = null;
+    resetForm();
+    fetchBooks();
+    
 };
 
-
+window.editBook = async function (id){
+    try{    
+        const checkResponse = await fetch (`${API_URL}${id}`);
+        if (!checkResponse.ok){
+            alert("Error: Book not found.");
+            resetForm();
+        return;
+            }
+        const book = await checkResponse.json()
+        document.getElementById('title').value = book.title || "";
+        document.getElementById('author').value = book.author || "";
+        document.getElementById('description').value = book.description || "";
+        document.getElementById('year').value = book.year || "";
+        editingBookId = id;
+       
+        }catch(error){
+            console.error("Edit error:", error);
+            alert ("Failed to load Book")
+        }
+    };
 
 function resetForm(){
-    document.getElementById('bookId').value="";
+    console.log("resetform called")
     document.getElementById('title').value="";
     document.getElementById('author').value="";
     document.getElementById('description').value="";
     document.getElementById('year').value="";
     document.querySelector('#bookForm button').innerText = "Save Book";
+    editingBookId=null;
 }
 window.findBook = async function () {
     const id = document.getElementById("searchId").value;
